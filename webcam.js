@@ -79,7 +79,7 @@
         if(!canvas.classList.contains("hide")) {
             canvas.classList.add("hide");
             video.classList.remove("hide");
-            takePic.innerText = "Landfill, Recycling, Compost?"
+            takePic.innerHTML = "<i class='fas fa-camera'></i> Landfill, Recycling, Compost?"
             clearphoto();
             return;
         }
@@ -88,6 +88,7 @@
         var data = canvas.toDataURL('image/png');
         canvas.classList.remove("hide");
         video.classList.add("hide");
+        drawTextCenterOfCanvas("Landfill - Click to take another picture", canvas);
         takePic.innerText = "Landfill - Click to take another picture";
         postBase64ImageMS(data);
     }
@@ -139,6 +140,15 @@
 
         xhr.send(data);
         return xhr;
+    }
+
+    function drawTextCenterOfCanvas(text, canvasElement) {
+        let canvasContext = canvasElement.getContext("2d");
+        canvasContext.fillStyle = "#4CAF50";
+        canvasContext.font = canvasContext.font.replace(/\d+px/, "50px"); 
+        canvasContext.textAlign = "center";
+        canvasContext.textBaseline = "middle";
+        canvasContext.fillText(text, canvasElement.width / 2, canvasElement.height / 2);
     }
 
     // Set up our event listener to run the startup process

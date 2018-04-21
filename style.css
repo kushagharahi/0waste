@@ -2,6 +2,7 @@ body {
     max-width: 800px;
     margin: 0 auto;
     padding: 10px;
+    background: #192231
 }
 
 video {
@@ -12,6 +13,12 @@ video {
 canvas {
     height: auto;
     width: 100%;
+}
+
+img {
+    display:block;
+    margin:auto;
+    padding: 10px;
 }
 
 .hide {
