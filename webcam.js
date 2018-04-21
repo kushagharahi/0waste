@@ -11,12 +11,14 @@
     var canvas = null;
     var photo = null;
     var takePic = null;
+    var labeldetection = null;
 
     function startup() {
         video = document.getElementById('video');
         canvas = document.getElementById('canvas');
         takePic = document.getElementById('takePic');
         container = document.getElementById('container');
+        labeldetection = document.getElementById('labeldetection');
 
         navigator.getMedia = (navigator.getUserMedia ||
             navigator.webkitGetUserMedia ||
@@ -104,6 +106,7 @@
             "3370b1758f3a491cafc41e4db85fbeb6",
             function (data) {
                 console.log(data);
+                displayResult(data);
             });
     }
 
@@ -150,6 +153,163 @@
         canvasContext.textBaseline = "middle";
         canvasContext.fillText(text, canvasElement.width / 2, canvasElement.height / 2);
     }
+    function displayResult(json){
+        data = JSON.parse(json);
+        categorize(data.description.tags)
+      }
+    
+      function categorize(tags){
+        var recycle = getRecycleCategory(tags);
+        var compost = getCompostCategory(tags);
+        var electronics = 0;
+        var result = null;
+    
+        if(recycle.count > compost.count > electronics){
+            takePic.innerText = "Recycle - Click to take another picture";
+            return;
+        }
+    
+        if(recycle.count < compost.count > electronics){
+            takePic.innerText = "Compost - Click to take another picture";
+            return;
+        }
+        
+        if(recycle.count < compost.count < electronics){
+            takePic.innerText = "Electronics - Click to take another picture";
+            return;
+        }
+    
+        takePic.innerText = "Landfill - Click to take another picture";
+      }
+    
+      function getRecycleCategory(tags){
+        var recycle = {};
+        var plastic = getPlastic(tags);
+        var metal = getMetal(tags);
+        var paper = getPaper(tags);
+    
+        recycle.count = plastic.length + metal.length + paper.length;
+        //TODO - add subcategories
+        return recycle; 
+      }
+    
+      function getPlastic(tags){
+        var plastic = [];
+        tags.forEach(function(tag) {
+          if(isPlastic(tag)){
+            plastic.push(tag);
+          }
+        });
+        return plastic;
+        
+        function isPlastic(tag){
+          var plastics = [
+            "bottle",
+            "glass",
+            "water",
+            "drinking water",
+            "plastic",
+            "drinking",
+            "beverage"
+          ];
+          return plastics.includes(tag);
+        }
+      }
+
+      function getMetal(tags){
+        var metal = [];
+        tags.forEach(function(tag) {
+          if(isMetal(tag)){
+            metal.push(tag);
+          }
+        });
+        return metal;
+        
+        function isMetal(tag){
+          var metals = [
+            "can",
+            "metal",
+            "bottle",
+            "beverage",
+            "canned",
+            "silver"
+          ];
+          return metals.includes(tag);
+        }
+      }
+
+      function getPaper(tags){
+        var paper = [];
+        tags.forEach(function(tag) {
+          if(isPaper(tag)){
+            paper.push(tag);
+          }
+        });
+        return paper;
+        
+        function isPaper(tag){
+          var papers = [
+            "paper",
+            "document",
+            "words",
+            "newspaper"
+          ];
+          return papers.includes(tag);
+        }
+      }
+
+      function getCompostCategory(tags){
+        var compost = {};
+        var items = getCompost(tags);
+    
+        compost.items = items;
+        compost.count = compost.items.length;
+
+        return compost; 
+      }
+
+      function getCompost(tags){
+        var compost = [];
+        tags.forEach(function(tag) {
+          if(isCompost(tag)){
+            compost.push(tag);
+          }
+        });
+        return compost;
+        
+        function isCompost(tag){
+          var composts = [
+            "food",
+            "apple",
+            "banana",
+            "eating",
+            "fruit"
+          ];
+          return composts.includes(tag);
+        }
+      }
+
+      function getPaper(tags){
+        var plastic = [];
+        tags.forEach(function(tag) {
+          if(isPlastic(tag)){
+            plastic.push(tag);
+          }
+        });
+        return plastic;
+        
+        function isPlastic(tag){
+          var plastics = [
+            "bottle",
+            "glass",
+            "water",
+            "plastic",
+            "drinking",
+            "beverage"
+          ];
+          return plastics.includes(tag);
+        }
+      }
 
     // Set up our event listener to run the startup process
     // once loading is complete.
