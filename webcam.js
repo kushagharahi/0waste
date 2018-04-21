@@ -149,14 +149,6 @@
         categorize(data.description.tags)
       }
     
-      function printToScreen(annotation){
-        var node = document.createElement("DIV");                 // Create a <p> node
-        var textnode = document.createTextNode(annotation);         // Create a text node
-        node.appendChild(textnode);                              // Append the text to <p>
-        labeldetection.appendChild(node);
-        console.log(annotation);
-      }
-    
       function categorize(tags){
         var recycle = getRecycleCategory(tags);
         var compost = getCompostCategory(tags);
@@ -164,37 +156,31 @@
         var result = null;
     
         if(recycle.count > compost.count > electronics){
-            printToScreen("Recycle");
+            takePic.innerText("Recycle - Click to take another picture");
             return;
         }
     
         if(recycle.count < compost.count > electronics){
-            printToScreen("Compost");
+            takePic.innerText("Compost - Click to take another picture");
             return;
         }
         
         if(recycle.count < compost.count < electronics){
-            printToScreen("Electronics");
+            takePic.innerText("Electronics - Click to take another picture");
             return;
         }
     
-        printToScreen("Landfill");
+        takePic.innerText("Landfill - Click to take another picture");
       }
     
       function getRecycleCategory(tags){
         var recycle = {};
         var plastic = getPlastic(tags);
+        var metal = getMetal(tags);
+        var paper = getPaper(tags);
     
-        recycle.count = plastic.length;
-        recycle.plastic = plastic;
-
-        //get max category
-        
-        recycle.toDisplay = function(){
-            printToScreen("Recycle");
-            //print subcategory
-        }
-
+        recycle.count = plastic.length + metal.length + paper.length;
+        //TODO - add subcategories
         return recycle; 
       }
     
@@ -218,6 +204,48 @@
             "beverage"
           ];
           return plastics.includes(tag);
+        }
+      }
+
+      function getMetal(tags){
+        var metal = [];
+        tags.forEach(function(tag) {
+          if(isMetal(tag)){
+            metal.push(tag);
+          }
+        });
+        return metal;
+        
+        function isMetal(tag){
+          var metals = [
+            "can",
+            "metal",
+            "bottle",
+            "beverage",
+            "canned",
+            "silver"
+          ];
+          return metals.includes(tag);
+        }
+      }
+
+      function getPaper(tags){
+        var paper = [];
+        tags.forEach(function(tag) {
+          if(isPaper(tag)){
+            paper.push(tag);
+          }
+        });
+        return paper;
+        
+        function isPaper(tag){
+          var papers = [
+            "paper",
+            "document",
+            "words",
+            "newspaper"
+          ];
+          return papers.includes(tag);
         }
       }
 
@@ -245,7 +273,8 @@
             "food",
             "apple",
             "banana",
-            "eating"
+            "eating",
+            "fruit"
           ];
           return composts.includes(tag);
         }
