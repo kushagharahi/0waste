@@ -1,114 +1,308 @@
-(function() {
-    // The width and height of the captured photo. We will set the
-    // width to the value defined here, but the height will be
-    // calculated based on the aspect ratio of the input stream.
-  
-    var width = 320;    // We will scale the photo width to this
-    var height = 0;     // This will be computed based on the input stream
-  
+(function () {
     // |streaming| indicates whether or not we're currently streaming
     // video from the camera. Obviously, we start at false.
-  
+
     var streaming = false;
-  
+
     // The various HTML elements we need to configure or control. These
     // will be set by the startup() function.
-  
+
     var video = null;
     var canvas = null;
     var photo = null;
-    var startbutton = null;
-  
+    var takePic = null;
+    var labeldetection = null;
+
     function startup() {
-      video = document.getElementById('video');
-      canvas = document.getElementById('canvas');
-      photo = document.getElementById('photo');
-      startbutton = document.getElementById('startbutton');
-  
-      navigator.getMedia = ( navigator.getUserMedia ||
-                             navigator.webkitGetUserMedia ||
-                             navigator.mozGetUserMedia ||
-                             navigator.msGetUserMedia);
-  
-      navigator.getMedia(
-        {
-          video: true,
-          audio: false
-        },
-        function(stream) {
-          if (navigator.mozGetUserMedia) {
-            video.mozSrcObject = stream;
-          } else {
-            var vendorURL = window.URL || window.webkitURL;
-            video.src = vendorURL.createObjectURL(stream);
-          }
-          video.play();
-        },
-        function(err) {
-          console.log("An error occured! " + err);
-        }
-      );
-  
-      video.addEventListener('canplay', function(ev){
-        if (!streaming) {
-          height = video.videoHeight / (video.videoWidth/width);
-        
-          // Firefox currently has a bug where the height can't be read from
-          // the video, so we will make assumptions if this happens.
-        
-          if (isNaN(height)) {
-            height = width / (4/3);
-          }
-        
-          video.setAttribute('width', width);
-          video.setAttribute('height', height);
-          canvas.setAttribute('width', width);
-          canvas.setAttribute('height', height);
-          streaming = true;
-        }
-      }, false);
-  
-      startbutton.addEventListener('click', function(ev){
-        takepicture();
-        ev.preventDefault();
-      }, false);
-      
-      clearphoto();
+        video = document.getElementById('video');
+        canvas = document.getElementById('canvas');
+        takePic = document.getElementById('takePic');
+        container = document.getElementById('container');
+        labeldetection = document.getElementById('labeldetection');
+
+        navigator.getMedia = (navigator.getUserMedia ||
+            navigator.webkitGetUserMedia ||
+            navigator.mozGetUserMedia ||
+            navigator.msGetUserMedia);
+
+        navigator.getMedia(
+            {
+                video: true,
+                audio: false
+            },
+            function (stream) {
+                if (navigator.mozGetUserMedia) {
+                    video.mozSrcObject = stream;
+                } else {
+                    var vendorURL = window.URL || window.webkitURL;
+                    video.src = vendorURL.createObjectURL(stream);
+                }
+                video.play();
+            },
+            function (err) {
+                console.log("An error occured! " + err);
+            }
+        );
+
+        video.addEventListener('canplay', function (ev) {
+            if (!streaming) {
+                streaming = true;
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+            }
+        }, false);
+
+        takePic.addEventListener('click', function (ev) {
+            takepicture();
+            ev.preventDefault();
+        }, false);
+
+        clearphoto();
     }
-  
+
     // Fill the photo with an indication that none has been
     // captured.
-  
+
     function clearphoto() {
-      var context = canvas.getContext('2d');
-      context.fillStyle = "#AAA";
-      context.fillRect(0, 0, canvas.width, canvas.height);
-  
-      var data = canvas.toDataURL('image/png');
-      photo.setAttribute('src', data);
+        var context = canvas.getContext('2d');
+        context.fillStyle = "#AAA";
+        context.fillRect(0, 0, canvas.width, canvas.height);
+
+        var data = canvas.toDataURL('image/png');
     }
-    
+
     // Capture a photo by fetching the current contents of the video
     // and drawing it into a canvas, then converting that to a PNG
     // format data URL. By drawing it on an offscreen canvas and then
     // drawing that to the screen, we can change its size and/or apply
     // other changes before drawing it.
-  
+
     function takepicture() {
-      var context = canvas.getContext('2d');
-      if (width && height) {
-        canvas.width = width;
-        canvas.height = height;
-        context.drawImage(video, 0, 0, width, height);
-      
+        if(!canvas.classList.contains("hide")) {
+            canvas.classList.add("hide");
+            video.classList.remove("hide");
+            takePic.innerText = "Landfill, Recycling, Compost?"
+            clearphoto();
+            return;
+        }
+        var context = canvas.getContext('2d');
+        context.drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
         var data = canvas.toDataURL('image/png');
-        photo.setAttribute('src', data);
-      } else {
-        clearphoto();
-      }
+        canvas.classList.remove("hide");
+        video.classList.add("hide");
+        takePic.innerText = "Analyzing...";
+        postBase64ImageMS(data);
     }
-  
+
+    function postBase64ImageMS(data) {
+        var params = {
+            "visualFeatures": "Categories,Description,Color",
+            "details": "",
+            "language": "en",
+        };
+        postAjax("https://westcentralus.api.cognitive.microsoft.com/vision/v1.0/analyze?visualFeatures=Description,Tags",
+            makeBlob(data),
+            "3370b1758f3a491cafc41e4db85fbeb6",
+            function (data) {
+                console.log(data);
+                displayResult(data);
+            });
+    }
+
+    function makeBlob(dataURL) {
+        var BASE64_MARKER = ';base64,';
+        if (dataURL.indexOf(BASE64_MARKER) == -1) {
+            var parts = dataURL.split(',');
+            var contentType = parts[0].split(':')[1];
+            var raw = decodeURIComponent(parts[1]);
+            return new Blob([raw], { type: contentType });
+        }
+        var parts = dataURL.split(BASE64_MARKER);
+        var contentType = parts[0].split(':')[1];
+        var raw = window.atob(parts[1]);
+        var rawLength = raw.length;
+
+        var uInt8Array = new Uint8Array(rawLength);
+
+        for (var i = 0; i < rawLength; ++i) {
+            uInt8Array[i] = raw.charCodeAt(i);
+        }
+
+        return new Blob([uInt8Array], { type: contentType });
+    }
+
+    function postAjax(url, data, key, success) {
+        var xhr = window.XMLHttpRequest ? new XMLHttpRequest() : new ActiveXObject("Microsoft.XMLHTTP");
+        xhr.open('POST', url);
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState > 3 && xhr.status == 200) { success(xhr.responseText); }
+        };
+        xhr.setRequestHeader('Content-Type', 'application/octet-stream');
+        xhr.setRequestHeader("Ocp-Apim-Subscription-Key", key);
+
+        xhr.send(data);
+        return xhr;
+    }
+
+    function displayResult(json){
+        data = JSON.parse(json);
+        categorize(data.description.tags)
+      }
+    
+      function categorize(tags){
+        var recycle = getRecycleCategory(tags);
+        var compost = getCompostCategory(tags);
+        var electronics = 0;
+        var result = null;
+    
+        if(recycle.count > compost.count > electronics){
+            takePic.innerText = "Recycle - Click to take another picture";
+            return;
+        }
+    
+        if(recycle.count < compost.count > electronics){
+            takePic.innerText = "Compost - Click to take another picture";
+            return;
+        }
+        
+        if(recycle.count < compost.count < electronics){
+            takePic.innerText = "Electronics - Click to take another picture";
+            return;
+        }
+    
+        takePic.innerText = "Landfill - Click to take another picture";
+      }
+    
+      function getRecycleCategory(tags){
+        var recycle = {};
+        var plastic = getPlastic(tags);
+        var metal = getMetal(tags);
+        var paper = getPaper(tags);
+    
+        recycle.count = plastic.length + metal.length + paper.length;
+        //TODO - add subcategories
+        return recycle; 
+      }
+    
+      function getPlastic(tags){
+        var plastic = [];
+        tags.forEach(function(tag) {
+          if(isPlastic(tag)){
+            plastic.push(tag);
+          }
+        });
+        return plastic;
+        
+        function isPlastic(tag){
+          var plastics = [
+            "bottle",
+            "glass",
+            "water",
+            "drinking water",
+            "plastic",
+            "drinking",
+            "beverage"
+          ];
+          return plastics.includes(tag);
+        }
+      }
+
+      function getMetal(tags){
+        var metal = [];
+        tags.forEach(function(tag) {
+          if(isMetal(tag)){
+            metal.push(tag);
+          }
+        });
+        return metal;
+        
+        function isMetal(tag){
+          var metals = [
+            "can",
+            "metal",
+            "bottle",
+            "beverage",
+            "canned",
+            "silver"
+          ];
+          return metals.includes(tag);
+        }
+      }
+
+      function getPaper(tags){
+        var paper = [];
+        tags.forEach(function(tag) {
+          if(isPaper(tag)){
+            paper.push(tag);
+          }
+        });
+        return paper;
+        
+        function isPaper(tag){
+          var papers = [
+            "paper",
+            "document",
+            "words",
+            "newspaper"
+          ];
+          return papers.includes(tag);
+        }
+      }
+
+      function getCompostCategory(tags){
+        var compost = {};
+        var items = getCompost(tags);
+    
+        compost.items = items;
+        compost.count = compost.items.length;
+
+        return compost; 
+      }
+
+      function getCompost(tags){
+        var compost = [];
+        tags.forEach(function(tag) {
+          if(isCompost(tag)){
+            compost.push(tag);
+          }
+        });
+        return compost;
+        
+        function isCompost(tag){
+          var composts = [
+            "food",
+            "apple",
+            "banana",
+            "eating",
+            "fruit"
+          ];
+          return composts.includes(tag);
+        }
+      }
+
+      function getPaper(tags){
+        var plastic = [];
+        tags.forEach(function(tag) {
+          if(isPlastic(tag)){
+            plastic.push(tag);
+          }
+        });
+        return plastic;
+        
+        function isPlastic(tag){
+          var plastics = [
+            "bottle",
+            "glass",
+            "water",
+            "plastic",
+            "drinking",
+            "beverage"
+          ];
+          return plastics.includes(tag);
+        }
+      }
+
     // Set up our event listener to run the startup process
     // once loading is complete.
     window.addEventListener('load', startup, false);
-  })();
+})();
