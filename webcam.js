@@ -156,21 +156,21 @@
         var result = null;
     
         if(recycle.count > compost.count > electronics){
-            takePic.innerText("Recycle - Click to take another picture");
+            takePic.innerText = "Recycle - Click to take another picture";
             return;
         }
     
         if(recycle.count < compost.count > electronics){
-            takePic.innerText("Compost - Click to take another picture");
+            takePic.innerText = "Compost - Click to take another picture";
             return;
         }
         
         if(recycle.count < compost.count < electronics){
-            takePic.innerText("Electronics - Click to take another picture");
+            takePic.innerText = "Electronics - Click to take another picture";
             return;
         }
     
-        takePic.innerText("Landfill - Click to take another picture");
+        takePic.innerText = "Landfill - Click to take another picture";
       }
     
       function getRecycleCategory(tags){
