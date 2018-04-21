@@ -90,7 +90,7 @@
         var data = canvas.toDataURL('image/png');
         canvas.classList.remove("hide");
         video.classList.add("hide");
-        takePic.innerText = "Landfill - Click to take another picture";
+        takePic.innerText = "Analyzing...";
         postBase64ImageMS(data);
     }
 
