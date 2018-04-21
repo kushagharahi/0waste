@@ -102,11 +102,46 @@
         context.drawImage(video, 0, 0, width, height);
       
         var data = canvas.toDataURL('image/png');
+        postBase64Image(data);
         photo.setAttribute('src', data);
       } else {
         clearphoto();
       }
     }
+
+    function postBase64Image(data) {
+        data = data.replace('data:image/png;base64,', '');
+        postAjax("https://vision.googleapis.com/v1/images:annotate?key=AIzaSyD-LsvSiclcuKA8WaOfxMs8gwDRvFsEa1E", 
+        JSON.stringify({
+            requests: [{
+                image: {
+                    content: data
+                },
+                features: [{
+                    type: "LABEL_DETECTION",
+                    maxResults: 10
+                }]
+            }]
+        }),
+        function(data) {
+            console.log(data);
+        });
+    }
+
+    function postAjax(url, data, success) {
+	    var params = typeof data == 'string' ? data : Object.keys(data).map(
+	            function(k){ return encodeURIComponent(k) + '=' + encodeURIComponent(data[k]) }
+	        ).join('&');
+	
+	    var xhr = window.XMLHttpRequest ? new XMLHttpRequest() : new ActiveXObject("Microsoft.XMLHTTP");
+	    xhr.open('POST', url);
+	    xhr.onreadystatechange = function() {
+	        if (xhr.readyState>3 && xhr.status==200) { success(xhr.responseText); }
+	    };
+	    xhr.setRequestHeader('Content-Type', 'application/json');
+	    xhr.send(params);
+	    return xhr;
+	}
   
     // Set up our event listener to run the startup process
     // once loading is complete.
