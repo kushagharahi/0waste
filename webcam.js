@@ -102,44 +102,59 @@
         context.drawImage(video, 0, 0, width, height);
       
         var data = canvas.toDataURL('image/png');
-        postBase64Image(data);
+        postBase64ImageMS(data);
         photo.setAttribute('src', data);
       } else {
         clearphoto();
       }
     }
 
-    function postBase64Image(data) {
-        data = data.replace('data:image/png;base64,', '');
-        postAjax("https://vision.googleapis.com/v1/images:annotate?key=AIzaSyD-LsvSiclcuKA8WaOfxMs8gwDRvFsEa1E", 
-        JSON.stringify({
-            requests: [{
-                image: {
-                    content: data
-                },
-                features: [{
-                    type: "LABEL_DETECTION",
-                    maxResults: 10
-                }]
-            }]
-        }),
+    function postBase64ImageMS(data) {
+        var params = {
+            "visualFeatures": "Categories,Description,Color",
+            "details": "",
+            "language": "en",
+        };
+        postAjax("https://westcentralus.api.cognitive.microsoft.com/vision/v1.0/analyze?visualFeatures=Description,Tags", 
+        makeBlob(data),
         function(data) {
             console.log(data);
-        });
+        },
+    "3370b1758f3a491cafc41e4db85fbeb6");
     }
 
-    function postAjax(url, data, success) {
-	    var params = typeof data == 'string' ? data : Object.keys(data).map(
-	            function(k){ return encodeURIComponent(k) + '=' + encodeURIComponent(data[k]) }
-	        ).join('&');
-	
+    function makeBlob(dataURL) {
+        var BASE64_MARKER = ';base64,';
+        if (dataURL.indexOf(BASE64_MARKER) == -1) {
+            var parts = dataURL.split(',');
+            var contentType = parts[0].split(':')[1];
+            var raw = decodeURIComponent(parts[1]);
+            return new Blob([raw], { type: contentType });
+        }
+        var parts = dataURL.split(BASE64_MARKER);
+        var contentType = parts[0].split(':')[1];
+        var raw = window.atob(parts[1]);
+        var rawLength = raw.length;
+
+        var uInt8Array = new Uint8Array(rawLength);
+
+        for (var i = 0; i < rawLength; ++i) {
+            uInt8Array[i] = raw.charCodeAt(i);
+        }
+
+        return new Blob([uInt8Array], { type: contentType });
+    }
+
+    function postAjax(url, data, success, key) {
 	    var xhr = window.XMLHttpRequest ? new XMLHttpRequest() : new ActiveXObject("Microsoft.XMLHTTP");
 	    xhr.open('POST', url);
 	    xhr.onreadystatechange = function() {
 	        if (xhr.readyState>3 && xhr.status==200) { success(xhr.responseText); }
 	    };
-	    xhr.setRequestHeader('Content-Type', 'application/json');
-	    xhr.send(params);
+        xhr.setRequestHeader('Content-Type', 'application/octet-stream');
+        xhr.setRequestHeader("Ocp-Apim-Subscription-Key", key);
+        
+	    xhr.send(data);
 	    return xhr;
 	}
   
