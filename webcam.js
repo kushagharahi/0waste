@@ -11,12 +11,14 @@
     var canvas = null;
     var photo = null;
     var takePic = null;
+    var labeldetection = null;
 
     function startup() {
         video = document.getElementById('video');
         canvas = document.getElementById('canvas');
         takePic = document.getElementById('takePic');
         container = document.getElementById('container');
+        labeldetection = document.getElementById('labeldetection');
 
         navigator.getMedia = (navigator.getUserMedia ||
             navigator.webkitGetUserMedia ||
@@ -103,6 +105,7 @@
             "3370b1758f3a491cafc41e4db85fbeb6",
             function (data) {
                 console.log(data);
+                displayResult(data);
             });
     }
 
@@ -140,6 +143,135 @@
         xhr.send(data);
         return xhr;
     }
+
+    function displayResult(json){
+        data = JSON.parse(json);
+        categorize(data.description.tags)
+      }
+    
+      function printToScreen(annotation){
+        var node = document.createElement("DIV");                 // Create a <p> node
+        var textnode = document.createTextNode(annotation);         // Create a text node
+        node.appendChild(textnode);                              // Append the text to <p>
+        labeldetection.appendChild(node);
+        console.log(annotation);
+      }
+    
+      function categorize(tags){
+        var recycle = getRecycleCategory(tags);
+        var compost = getCompostCategory(tags);
+        var electronics = 0;
+        var result = null;
+    
+        if(recycle.count > compost.count > electronics){
+            printToScreen("Recycle");
+            return;
+        }
+    
+        if(recycle.count < compost.count > electronics){
+            printToScreen("Compost");
+            return;
+        }
+        
+        if(recycle.count < compost.count < electronics){
+            printToScreen("Electronics");
+            return;
+        }
+    
+        printToScreen("Landfill");
+      }
+    
+      function getRecycleCategory(tags){
+        var recycle = {};
+        var plastic = getPlastic(tags);
+    
+        recycle.count = plastic.length;
+        recycle.plastic = plastic;
+
+        //get max category
+        
+        recycle.toDisplay = function(){
+            printToScreen("Recycle");
+            //print subcategory
+        }
+
+        return recycle; 
+      }
+    
+      function getPlastic(tags){
+        var plastic = [];
+        tags.forEach(function(tag) {
+          if(isPlastic(tag)){
+            plastic.push(tag);
+          }
+        });
+        return plastic;
+        
+        function isPlastic(tag){
+          var plastics = [
+            "bottle",
+            "glass",
+            "water",
+            "drinking water",
+            "plastic",
+            "drinking",
+            "beverage"
+          ];
+          return plastics.includes(tag);
+        }
+      }
+
+      function getCompostCategory(tags){
+        var compost = {};
+        var items = getCompost(tags);
+    
+        compost.items = items;
+        compost.count = compost.items.length;
+
+        return compost; 
+      }
+
+      function getCompost(tags){
+        var compost = [];
+        tags.forEach(function(tag) {
+          if(isCompost(tag)){
+            compost.push(tag);
+          }
+        });
+        return compost;
+        
+        function isCompost(tag){
+          var composts = [
+            "food",
+            "apple",
+            "banana",
+            "eating"
+          ];
+          return composts.includes(tag);
+        }
+      }
+
+      function getPaper(tags){
+        var plastic = [];
+        tags.forEach(function(tag) {
+          if(isPlastic(tag)){
+            plastic.push(tag);
+          }
+        });
+        return plastic;
+        
+        function isPlastic(tag){
+          var plastics = [
+            "bottle",
+            "glass",
+            "water",
+            "plastic",
+            "drinking",
+            "beverage"
+          ];
+          return plastics.includes(tag);
+        }
+      }
 
     // Set up our event listener to run the startup process
     // once loading is complete.
