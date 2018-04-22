@@ -6,8 +6,8 @@ body {
 
 video, canvas {
     max-height: 60vh;
-    width: 100%;
-    margin: 10px auto;
+    max-width: 80vw;
+    margin: auto;
 }
 
 img {
@@ -15,6 +15,7 @@ img {
     margin: auto;
     max-width: 100%;
     height:auto;
+    padding:10px;
 }
 
 .hide {
@@ -38,5 +39,5 @@ img {
     font-size: 1.5em;
     max-width: 80vw;
     height: auto;
-    margin: auto;
+    margin: 10px auto;
 }

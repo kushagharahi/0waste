@@ -85,7 +85,7 @@
         var data = canvas.toDataURL('image/png');
         canvas.classList.remove("hide");
         video.classList.add("hide");
-        takePic.innerText = "Analyzing...";
+        takePic.innerHTML = "Analyzing...<br/><i class=\"em em-thinking_face\"></i>";
         postBase64ImageMS(data);
     }
 
