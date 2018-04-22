@@ -141,11 +141,13 @@
 
     function drawTextCenterOfCanvas(text, canvasElement) {
         let canvasContext = canvasElement.getContext("2d");
-        canvasContext.fillStyle = "#FFFF00";
-        canvasContext.font = canvasContext.font.replace(/\d+px/, "60px");
         canvasContext.textAlign = "center";
         canvasContext.textBaseline = "middle";
-
+        canvasContext.fillStyle = "#000000";
+        canvasContext.font = canvasContext.font.replace(/\d+px/, "60px");
+        canvasContext.fillText(text, canvasElement.width / 2, canvasElement.height / 2);
+        canvasContext.fillStyle = "#FFFF00";
+        canvasContext.font = canvasContext.font.replace(/\d+px/, "57px");
         canvasContext.fillText(text, canvasElement.width / 2, canvasElement.height / 2);
     }
     function displayResult(json) {
