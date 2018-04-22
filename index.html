@@ -1,12 +1,16 @@
-<div id="content">
-    <div>
-        <img src="logo.png"></img>
+<head>
+    <title>0waste - Avoid garbage bin confusion</title>
+    <script src="webcam.js"></script>
+    <link rel="stylesheet" href="style.css"></link>
+    <link rel="stylesheet" href="https://afeld.github.io/emoji-css/emoji.css">
+</head>
+<body>
+    <div id="content">
+        <div>
+            <img src="logo.png"></img>
+        </div>
+        <canvas class="hide" id="canvas"> </canvas>
+        <video id="video">Video stream not available.</video>
+        <button id="takePic">Landfill, Recycling, or Compost?<br /><i class="em em-camera"></i></button>
     </div>
-    <canvas class="hide" id="canvas"> </canvas>
-    <video id="video">Video stream not available.</video>
-    <button id="takePic">Landfill, Recycling, or Compost?<br /><i class="em em-camera"></i></button>
-</div>
-
-<script src="webcam.js"></script>
-<link rel="stylesheet" href="style.css"></link>
-<link rel="stylesheet" href="https://afeld.github.io/emoji-css/emoji.css">
+</body>
