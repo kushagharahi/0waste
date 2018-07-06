@@ -2,7 +2,7 @@
 
 Won Best Environmental Hack at EarthxHack 2018 
 
-All code developed at EarthxHack 2018 24 hour hackathon.
+All code developed at EarthxHack 2018 24 hour hackathon. Co-developed by @stephenhales
 
 ## Ever been confused when confronted with these bins?
 ![Landfill, Compost, Recycling bins](https://i.imgur.com/tq6NurE.jpg)
@@ -29,4 +29,5 @@ This eliminates the burden on the user to pick the correct bin and guarantees so
 This further eliminates the burden on the user to have sorted garbage.
 
 Devpost: https://devpost.com/software/0waste/
+
 Demo: https://kusha.me/0waste/
