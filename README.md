@@ -2,7 +2,7 @@
 
 Won Best Environmental Hack at EarthxHack 2018 
 
-All code developed at EarthxHack 2018 24 hour hackathon. Co-developed by @stephenhales
+All code developed at EarthxHack 2018 24 hour hackathon. Co-developed by [@stephenhales](https://github.com/stephenhales)
 
 ## Ever been confused when confronted with these bins?
 ![Landfill, Compost, Recycling bins](https://i.imgur.com/tq6NurE.jpg)
